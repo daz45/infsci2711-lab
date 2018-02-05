@@ -1,0 +1,84 @@
+Set 1.1: create nodes & relationships--------------------------
+
+CREATE (a:person:student{name: "Kary", gender:"female", age:25})
+CREATE (b:person:player{name: "Kelly", gender:"female", age:20})
+CREATE (c:person:student{name: "Peter", gender:"male", age:25})
+CREATE (d:person:officier{name: "alia", gender:"female", age:23})
+
+CREATE CONSTRAINT ON (n:person) 
+ASSERT n.name IS UNIQUE
+
+MATCH (a:student), (b:student) 
+   WHERE a.name = "Kary" AND b.name = "Peter" 
+CREATE (a)-[rel:friends_of]->(b) 
+RETURN a,b 
+
+
+
+Set 1.2: Merge-------------------------------------------------
+
+MATCH (a:person), (b:person) 
+   WHERE a.name = "alia" AND b.name = "Peter" 
+   MERGE (a)-[relationship:sister_of{liveTogether:False}]->(b) 
+   on match set relationship.addFlag=False
+   on create set relationship.addFlag=True
+RETURN a, b
+
+
+
+Set 1.3: delete------------------------------------------------
+
+Create a node: 
+	Merge(testNode:forDelExple)
+Delete it: 
+	MATCH (node: forDelExple) DETACH DELETE node
+
+
+Set 2.1: match where return + orderby--------------------------
+
+match (n:person)
+where n.gender = "female"
+return n.name, n.age 
+order by n.age
+
+
+Set 2.2: limit, skip, Count, substring-------------------------
+
+match (n:person) return n.name, n.age, n.gender limit 2
+
+match (n:person) return n.name, n.age, n.gender order by n.age skip 2
+
+match (n:person) return n.gender, count(*)
+
+match (n:person) return n.name, n.age,substring(n.gender, 0, 1)
+
+
+Set3: SET + REMOVE---------------------------------------------
+
+match(n) 
+where n.name="alia" 
+set n.hobby="reading"
+return n
+
+match(n) 
+where n.name="alia" 
+set n.hobby=null 
+return n
+
+match(n) 
+where n.name="alia" 
+set n:mother
+return n
+
+
+Set 4: foreach--------------------------------------------------
+
+MATCH (a), (b) 
+   WHERE a.name = "Peter" AND b.name = "Kelly" 
+CREATE (a)-[rel:audience_of]->(b) 
+RETURN a,b 
+
+MATCH p = (a:person)-[*]->(b:player) 
+WHERE a.name = "Kary" AND b.name = "Kelly"  
+FOREACH (n IN nodes(p)| SET n.marked = TRUE)
+return p
